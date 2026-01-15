@@ -1,0 +1,24 @@
+# Compiled object files
+*.o
+*.obj
+
+# Compiled executable
+*.exe
+*.out
+*.app
+
+# Visual Studio files
+*.vcxproj*
+*.suo
+*.user
+*.ncb
+
+# Build folders
+/build/
+/bin/
+/Debug/
+/Release/
+
+# OS files
+.DS_Store
+Thumbs.db
