@@ -62,8 +62,8 @@ void registerUser() {
     cout << "Registration successful!\n";
 }
 
-bool login(char loggedUser[]) {
-    char u[30], p[30];
+bool login(char loggedUser[], bool& isAdmin) {
+    char u[30], p[30], role[10];
     char username[30], password[30];
 
     cout << "Username: ";
@@ -72,9 +72,11 @@ bool login(char loggedUser[]) {
     cin >> password;
 
     ifstream file("users.txt");
-    while (file >> u >> p) {
+    while (file >> u >> p >> role) {
         if (strEqual(u, username) && strEqual(p, password)) {
             strCopy(loggedUser, u);
+            isAdmin = strEqual(role, "admin");
+            file.close();
             return true;
         }
     }
@@ -82,15 +84,83 @@ bool login(char loggedUser[]) {
     return false;
 }
 
+void getRandomWord(char chosen[]) {
+    char words[1000][10];
+    int count = 0;
+
+    ifstream file("words.txt");
+    if (!file) {
+        cout << "words.txt not found!\n";
+        exit(1);
+    }
+
+    while (file >> words[count]) count++;
+    file.close();
+
+    if (count == 0) {
+        cout << "No words available!\n";
+        exit(1);
+    }
+
+    int index = rand() % count;
+    strCopy(chosen, words[index]);
+}
+
+void addWord() {
+    char word[10];
+    cout << "New word: ";
+    cin >> word;
+
+    ofstream file("words.txt", ios::app);
+    file << word << endl;
+    file.close();
+
+    cout << "Word added.\n";
+}
+
+void adminMenu(const char user[]) {
+    int choice;
+    do {
+        cout << "\n1. Add word\n2. Leaderboard\n3. Logout\nChoice: ";
+        cin >> choice;
+
+        if (choice == 1) addWord();
+        else if (choice == 2) showLeaderboard();
+
+    } while (choice != 3);
+}
+
+void userMenu(const char user[]) {
+    int choice;
+    do {
+        cout << "\n1. Play\n2. Leaderboard\n3. Logout\nChoice: ";
+        cin >> choice;
+
+        if (choice == 1) playGame(user);
+        else if (choice == 2) showLeaderboard();
+
+    } while (choice != 3);
+}
+
 int main() {
     int choice;
+    char loggedUser[30];
+    bool isAdmin;
 
     do {
-        cout << "1. Login\n";
-        cout << "2. Register\n";
-        cout << "3. Exit\n";
-        cout << "Choice: ";
+        cout << "\n1. Login\n2. Register\n3. Exit\nChoice: ";
         cin >> choice;
+
+        if (choice == 2) registerUser();
+        else if (choice == 1) {
+            if (login(loggedUser, isAdmin)) {
+                if (isAdmin) adminMenu(loggedUser);
+                else userMenu(loggedUser);
+            }
+            else {
+                cout << "Login failed! Either username or password is incorrect.\n";
+            }
+        }
     } while (choice != 3);
 
     return 0;
