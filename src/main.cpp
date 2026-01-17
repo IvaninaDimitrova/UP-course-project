@@ -131,30 +131,6 @@ void addWord() {
     cout << "Word added.\n";
 }
 
-void adminMenu(const char user[]) {
-    int choice;
-    do {
-        cout << "\n1. Add word\n2. Leaderboard\n3. Logout\nChoice: ";
-        cin >> choice;
-
-        if (choice == 1) addWord();
-        else if (choice == 2) showLeaderboard();
-
-    } while (choice != 3);
-}
-
-void userMenu(const char user[]) {
-    int choice;
-    do {
-        cout << "\n1. Play\n2. Leaderboard\n3. Logout\nChoice: ";
-        cin >> choice;
-
-        if (choice == 1) playGame(user);
-        else if (choice == 2) showLeaderboard();
-
-    } while (choice != 3);
-}
-
 void updateLeaderboard(const char user[], bool win) {
     char name[30];
     int games, wins;
@@ -193,6 +169,74 @@ void showLeaderboard() {
             << " | Wins: " << wins << "\n";
     }
     file.close();
+}
+
+void checkGuess(const char secret[], const char guess[]) {
+    for (int i = 0; secret[i] != '\0'; i++) {
+        if (guess[i] == secret[i])
+            cout << GREEN << guess[i] << RESET;
+        else if (containsChar(secret, guess[i]))
+            cout << YELLOW << guess[i] << RESET;
+        else
+            cout << guess[i];
+    }
+    cout << "\n";
+}
+
+void playGame(const char user[]) {
+    char secret[10], guess[10];
+    int attempts = 6;
+
+    getRandomWord(secret);
+    int len = strLen(secret);
+
+    cout << "\nGuess the word (" << len << " letters)\n";
+
+    for (int i = 0; i < attempts; i++) {
+        cout << "Attempt " << i + 1 << ": ";
+        cin >> guess;
+
+        if (!validWord(guess, len)) {
+            cout << "Invalid word!\n";
+            i--;
+            continue;
+        }
+
+        checkGuess(secret, guess);
+
+        if (strEqual(secret, guess)) {
+            cout << "You WIN!\n";
+            updateLeaderboard(user, true);
+            return;
+        }
+    }
+
+    cout << "You LOST! Word was: " << secret << "\n";
+    updateLeaderboard(user, false);
+}
+
+void adminMenu(const char user[]) {
+    int choice;
+    do {
+        cout << "\n1. Add word\n2. Leaderboard\n3. Logout\nChoice: ";
+        cin >> choice;
+
+        if (choice == 1) addWord();
+        else if (choice == 2) showLeaderboard();
+
+    } while (choice != 3);
+}
+
+void userMenu(const char user[]) {
+    int choice;
+    do {
+        cout << "\n1. Play\n2. Leaderboard\n3. Logout\nChoice: ";
+        cin >> choice;
+
+        if (choice == 1) playGame(user);
+        else if (choice == 2) showLeaderboard();
+
+    } while (choice != 3);
 }
 
 int main() {
