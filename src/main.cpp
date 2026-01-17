@@ -155,6 +155,46 @@ void userMenu(const char user[]) {
     } while (choice != 3);
 }
 
+void updateLeaderboard(const char user[], bool win) {
+    char name[30];
+    int games, wins;
+    bool found = false;
+
+    ifstream in("leaderboard.txt");
+    ofstream out("temp.txt");
+
+    while (in >> name >> games >> wins) {
+        if (strEqual(name, user)) {
+            games++;
+            if (win) wins++;
+            found = true;
+        }
+        out << name << " " << games << " " << wins << "\n";
+    }
+
+    if (!found)
+        out << user << " 1 " << (win ? 1 : 0) << "\n";
+
+    in.close();
+    out.close();
+
+    remove("leaderboard.txt");
+    rename("temp.txt", "leaderboard.txt");
+}
+
+void showLeaderboard() {
+    char name[30];
+    int games, wins;
+
+    ifstream file("leaderboard.txt");
+    cout << "\n--- Leaderboard ---\n";
+    while (file >> name >> games >> wins) {
+        cout << name << " | Games: " << games
+            << " | Wins: " << wins << "\n";
+    }
+    file.close();
+}
+
 int main() {
     int choice;
     char loggedUser[30];
