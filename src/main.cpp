@@ -47,6 +47,19 @@ void strCopy(char dest[], const char src[]) {
     dest[i] = '\0';
 }
 
+bool containsChar(const char word[], char c) {
+    for (int i = 0; word[i] != '\0'; i++)
+        if (word[i] == c) return true;
+    return false;
+}
+
+bool validWord(const char word[], int len) {
+    if (strLen(word) != len) return false;
+    for (int i = 0; word[i] != '\0'; i++)
+        if (word[i] < 'a' || word[i] > 'z') return false;
+    return true;
+}
+
 void registerUser() {
     char username[30], password[30];
 
