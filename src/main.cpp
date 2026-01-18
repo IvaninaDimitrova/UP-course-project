@@ -7,7 +7,7 @@
 *
 * @author Ivanina Dimitrova
 * @idnumber <1MI0600686>
-* @compiler GCC
+* @compiler VC
 *
 * main file
 *
@@ -16,7 +16,6 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
-#include <ctime>
 
 using namespace std;
 
@@ -334,7 +333,7 @@ void userMenu(const char user[]) {
 }
 
 int main() {
-    srand(time(0));
+    srand(1234);
 
     int choice;
     char loggedUser[30];
