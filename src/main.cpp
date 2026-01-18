@@ -16,6 +16,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
+#include <ctime>
 
 using namespace std;
 
@@ -58,6 +59,47 @@ bool validWord(const char word[], int len) {
     for (int i = 0; word[i] != '\0'; i++)
         if (word[i] < 'a' || word[i] > 'z') return false;
     return true;
+}
+
+bool wordExists(const char word[]) {
+    char w[10];
+    ifstream file("words.txt");
+    while (file >> w) {
+        if (strEqual(w, word)) {
+            file.close();
+            return true;
+        }
+    }
+    file.close();
+    return false;
+}
+
+void removeWord() {
+    char word[10], w[10];
+    cout << "Word to remove: ";
+    cin >> word;
+
+    ifstream in("words.txt");
+    ofstream out("temp.txt");
+    bool removed = false;
+
+    while (in >> w) {
+        if (!strEqual(w, word))
+            out << w << endl;
+        else
+            removed = true;
+    }
+
+    in.close();
+    out.close();
+
+    remove("words.txt");
+    rename("temp.txt", "words.txt");
+
+    if (removed)
+        cout << "Word removed.\n";
+    else
+        cout << "Word not found.\n";
 }
 
 void registerUser() {
@@ -124,6 +166,16 @@ void addWord() {
     cout << "New word: ";
     cin >> word;
 
+    if (!validWord(word, strLen(word))) {
+        cout << "Invalid word!\n";
+        return;
+    }
+
+    if (wordExists(word)) {
+        cout << "Word already exists!\n";
+        return;
+    }
+
     ofstream file("words.txt", ios::app);
     file << word << endl;
     file.close();
@@ -169,6 +221,45 @@ void showLeaderboard() {
             << " | Wins: " << wins << "\n";
     }
     file.close();
+}
+
+void showLeaderboardSorted(bool byWinrate) {
+    char name[100][30];
+    int games[100], wins[100];
+    int count = 0;
+
+    ifstream file("leaderboard.txt");
+    while (file >> name[count] >> games[count] >> wins[count])
+        count++;
+    file.close();
+
+    for (int i = 0; i < count - 1; i++) {
+        for (int j = i + 1; j < count; j++) {
+            double a = byWinrate ? 
+                (games[i] ? (double)wins[i] / games[i] : 0) : games[i];
+            double b = byWinrate ? 
+                (games[j] ? (double)wins[j] / games[j] : 0) : games[j];
+
+            if (b > a) {
+                swap(games[i], games[j]);
+                swap(wins[i], wins[j]);
+
+                char temp[30];
+                strCopy(temp, name[i]);
+                strCopy(name[i], name[j]);
+                strCopy(name[j], temp);
+            }
+        }
+    }
+
+    cout << "\n--- Leaderboard ---\n";
+    for (int i = 0; i < count; i++) {
+        cout << name[i] << " | Games: " << games[i]
+             << " | Wins: " << wins[i];
+        if (games[i] > 0)
+            cout << " | Winrate: " << (wins[i] * 100 / games[i]) << "%";
+        cout << endl;
+    }
 }
 
 void checkGuess(const char secret[], const char guess[]) {
@@ -218,28 +309,33 @@ void playGame(const char user[]) {
 void adminMenu(const char user[]) {
     int choice;
     do {
-        cout << "\n1. Add word\n2. Leaderboard\n3. Logout\nChoice: ";
+        cout << "\n1. Add word\n2. Remove word\n3. Leaderboard (games)\n4. Leaderboard (winrate)\n5. Logout\nChoice: ";
         cin >> choice;
 
         if (choice == 1) addWord();
-        else if (choice == 2) showLeaderboard();
+        else if (choice == 2) removeWord();
+        else if (choice == 3) showLeaderboardSorted(false);
+        else if (choice == 4) showLeaderboardSorted(true);
 
-    } while (choice != 3);
+    } while (choice != 5);
 }
 
 void userMenu(const char user[]) {
     int choice;
     do {
-        cout << "\n1. Play\n2. Leaderboard\n3. Logout\nChoice: ";
+        cout << "\n1. Play\n2. Leaderboard (games)\n3. Leaderboard (winrate)\n4. Logout\nChoice: ";
         cin >> choice;
 
         if (choice == 1) playGame(user);
-        else if (choice == 2) showLeaderboard();
+        else if (choice == 2) showLeaderboardSorted(false);
+        else if (choice == 3) showLeaderboardSorted(true);
 
-    } while (choice != 3);
+    } while (choice != 4);
 }
 
 int main() {
+    srand(time(0));
+
     int choice;
     char loggedUser[30];
     bool isAdmin;
